@@ -90,8 +90,8 @@ test('mass payout is limited to 19 wallets', async () => {
 
 test('paymentUrl keeps address_in encoded once', () => {
   assert.equal(
-    card.paymentUrl(ADDRESS_IN, 49.9, 'buyer+1@example.com', 'eur'),
-    `https://checkout.paygate.to/pay.php?address=${ADDRESS_IN}&amount=49.9&email=buyer%2B1%40example.com&currency=EUR`,
+    card.paymentUrl(ADDRESS_IN, 49.9, 'buyer+1@example8585859.com', 'eur'),
+    `https://checkout.paygate.to/pay.php?address=${ADDRESS_IN}&amount=49.9&email=buyer%2B1%40example8585859.com&currency=EUR`,
   );
   assert.match(card.paymentUrl({ addressIn: 'abc+/=' }, '10', 'a@b.co', 'USD'), /address=abc%2B%2F%3D&/);
 });

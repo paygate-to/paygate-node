@@ -11,9 +11,9 @@ test('defaults', () => {
 });
 
 test('dedicated domains are normalised', () => {
-  const client = new PayGate({ apiDomain: 'https://API-MyShop-1a2b.paygate.to/', checkoutDomain: 'pay.example.com', fetch: new FakeFetch().fetch });
+  const client = new PayGate({ apiDomain: 'https://API-MyShop-1a2b.paygate.to/', checkoutDomain: 'pay.example8585859.com', fetch: new FakeFetch().fetch });
   assert.equal(client.apiDomain, 'api-myshop-1a2b.paygate.to');
-  assert.equal(client.checkoutDomain, 'pay.example.com');
+  assert.equal(client.checkoutDomain, 'pay.example8585859.com');
 });
 
 test('unknown option, bad host and bad numbers are rejected', () => {

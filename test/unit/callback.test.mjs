@@ -3,14 +3,14 @@ import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { test } from 'node:test';
 import { CallbackData, CallbackToken, CallbackVerifier, InvalidArgumentError, PAYGATE_CALLBACK_PUBLIC_KEY_V1, callbackBase, rawQueryFrom } from '../../dist/esm/index.js';
 
-const REGISTERED = 'https://www.example.com/orders.php?number=827746841326';
+const REGISTERED = 'https://www.example8585859.com/orders.php?number=827746841326';
 const QUERY = 'number=827746841326&value_coin=105.6&coin=polygon_usdc&txid_in=0xa22a82b4aefbc55f6382e1b5c0b4f0e3c034a654df3bcac431f7fed1942e22bc&txid_out=0x94c2c3e84c2021e6bf377aebf8abf03b49570611bb0c336e357d7f4516f56244&address_in=0x32e854bD1270670C832634CA87858fFd9F3e2c78&value_forwarded_coin=104.016&address_out=%7B%220x34653D12778FccF10eE978EfFb16450258d2aFc9%22%3A%220.0500%22%2C%220x042beb6Ab05814c3A54C4124e368a30c4f7c93FB%22%3A%220.9250%22%7D';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const PEM = publicKey.export({ type: 'spki', format: 'pem' });
 const signWith = (data, key = privateKey) => sign('sha256', Buffer.from(data), key).toString('base64');
 const verifier = () => new CallbackVerifier({ keys: { v1: PEM } });
-const SIG = signWith('https://www.example.com/orders.php?' + QUERY);
+const SIG = signWith('https://www.example8585859.com/orders.php?' + QUERY);
 
 test('valid signature', async () => {
   assert.deepEqual(await verifier().verify(REGISTERED, QUERY, SIG, 'v1'), { valid: true, reason: '', keyId: 'v1' });
@@ -22,7 +22,7 @@ test('altered amount, host or path is rejected', async () => {
   const forged = QUERY.replace('value_coin=105.6', 'value_coin=1056');
   assert.equal((await verifier().verify(REGISTERED, forged, SIG)).reason, 'signature_mismatch');
   assert.equal((await verifier().verify('https://evil.example/orders.php', QUERY, SIG)).reason, 'signature_mismatch');
-  assert.equal((await verifier().verify('https://www.example.com/other.php', QUERY, SIG)).reason, 'signature_mismatch');
+  assert.equal((await verifier().verify('https://www.example8585859.com/other.php', QUERY, SIG)).reason, 'signature_mismatch');
 });
 
 test('the raw query is used, never a rebuilt one', async () => {
@@ -35,7 +35,7 @@ test('the raw query is used, never a rebuilt one', async () => {
 
 test('signature from another key is rejected', async () => {
   const other = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey;
-  const sig = signWith('https://www.example.com/orders.php?' + QUERY, other);
+  const sig = signWith('https://www.example8585859.com/orders.php?' + QUERY, other);
   assert.equal((await verifier().verify(REGISTERED, QUERY, sig)).reason, 'signature_mismatch');
 });
 

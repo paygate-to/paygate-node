@@ -30,10 +30,10 @@ describe('live API', { skip: !enabled && 'set PAYGATE_INTEGRATION=1 to call the 
 
   test('wallet creation', { skip: !process.env.PAYGATE_TEST_EVM_WALLET && 'set PAYGATE_TEST_EVM_WALLET' }, async () => {
     const wallet = process.env.PAYGATE_TEST_EVM_WALLET;
-    const callback = `https://example.com/paygate-sdk-test?order=${Date.now()}`;
+    const callback = `https://example8585859.com/paygate-sdk-test?order=${Date.now()}`;
     const card = await paygate.card.createWallet(wallet, callback);
     assert.ok(card.addressIn);
-    assert.match(paygate.card.paymentUrl(card, '10', 'test@example.com', 'USD'), /^https:\/\//);
+    assert.match(paygate.card.paymentUrl(card, '10', 'test@example8585859.com', 'USD'), /^https:\/\//);
     assert.ok((await paygate.crypto.createWallet('polygon_usdc', wallet, callback)).addressIn);
   });
 });
