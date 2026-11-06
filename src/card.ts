@@ -28,13 +28,15 @@ export interface CardWallet {
 
 /** A card provider from providers(). */
 export interface CardProvider {
-  /** Value for the provider argument of paymentUrl(), e.g. "wert". */
+  /** Value for the provider argument of paymentUrl(), e.g. "stripe". */
   id: string;
   name: string;
   status: string;
   active: boolean;
   minimumCurrency: string;
   minimumAmount: string;
+  /** Fees as PayGate.to returns them, e.g. "2% + Provider". Show it as it is; empty when not sent. */
+  fees: string;
 }
 
 export interface CardPaymentStatus {
@@ -159,9 +161,11 @@ export class CardApi {
     return `https://${this.checkoutHost}/pay.php${queryString(query, ['address'])}`;
   }
 
-  /** All card providers with their status and minimum order (GET /control/provider-status). */
+  /** All card providers with their status, fees and minimum order (GET /control/provider-status/). */
   async providers(): Promise<CardProvider[]> {
-    const data = await this.api.get('control/provider-status');
+    // The trailing slash matters: without it the API answers with a redirect, which the SDK
+    // never follows (redirects are disabled so requests can't be sent to another host).
+    const data = await this.api.get('control/provider-status/');
     const list: unknown[] = Array.isArray(data.providers) ? data.providers : [];
     return list
       .filter((row): row is Record<string, unknown> => !!row && typeof row === 'object' && 'id' in row)
@@ -174,6 +178,7 @@ export class CardApi {
           active: status.toLowerCase() === 'active',
           minimumCurrency: String(row.minimum_currency ?? ''),
           minimumAmount: row.minimum_amount === undefined ? '' : String(row.minimum_amount),
+          fees: row.fees === undefined || row.fees === null ? '' : String(row.fees),
         };
       });
   }

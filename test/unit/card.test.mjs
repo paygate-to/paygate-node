@@ -129,13 +129,16 @@ for (const [name, amount, email, currency] of [
 
 test('providers', async () => {
   http.respond({ providers: [
-    { id: 'wert', provider_name: 'Wert.io', status: 'active', minimum_currency: 'USD', minimum_amount: 1 },
-    { id: 'stripe', provider_name: 'Stripe (USA)', status: 'inactive', minimum_currency: 'USD', minimum_amount: 2 },
+    { id: 'stripe', provider_name: 'Stripe (US/EU)', status: 'active', fees: '2% + Provider', minimum_currency: 'USD', minimum_amount: 2 },
+    { id: 'banxa', provider_name: 'Banxa', status: 'unstable', minimum_currency: 'USD', minimum_amount: 11 },
   ] });
   const providers = await card.providers();
+  // The trailing slash avoids the API's redirect (the SDK never follows redirects).
+  assert.equal(http.lastPath, '/control/provider-status/');
   assert.equal(providers.length, 2);
-  assert.deepEqual(providers[0], { id: 'wert', name: 'Wert.io', status: 'active', active: true, minimumCurrency: 'USD', minimumAmount: '1' });
+  assert.deepEqual(providers[0], { id: 'stripe', name: 'Stripe (US/EU)', status: 'active', active: true, minimumCurrency: 'USD', minimumAmount: '2', fees: '2% + Provider' });
   assert.equal(providers[1].active, false);
+  assert.equal(providers[1].fees, '');
 });
 
 test('convertToUsd', async () => {

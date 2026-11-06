@@ -1,6 +1,6 @@
 {
   "name": "paygate-to",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Node.js SDK for PayGate.to: card and crypto payments without KYC, instant payouts to your own wallet, and signed callback verification.",
   "keywords": [
     "paygate",

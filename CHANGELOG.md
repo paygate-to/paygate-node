@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-11-06
+
+### Fixed
+- `card.providers()` failed with "HTTP 301": the provider list is now requested at
+  `control/provider-status/` (with the trailing slash), so no redirect is involved.
+
+### Added
+- `fees` on each `CardProvider`: the fee as PayGate.to returns it, e.g. `2% + Provider`.
+
 ## [1.0.0] - 2026-10-14
 
 ### Added

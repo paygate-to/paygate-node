@@ -64,14 +64,14 @@ res.redirect(paygate.card.paymentUrl(wallet, order.total, order.email, 'EUR'));
 
 The customer can see the amount in the payment link, so always compare what arrives with what you expect (see [Handling the callback](#handling-the-callback)).
 
-`paymentUrl()` opens the hosted page, which lists the providers available for the customer's country, amount and currency. You can send the customer straight to one provider instead. `providers()` lists the providers, with their status and minimum order:
+`paymentUrl()` opens the hosted page, which lists the providers available for the customer's country, amount and currency. You can send the customer straight to one provider instead. `providers()` lists the providers, with their status, fees and minimum order:
 
 ```js
 for (const provider of await paygate.card.providers()) {
-  if (provider.active) console.log(provider.id, provider.name, provider.minimumAmount, provider.minimumCurrency);
+  if (provider.active) console.log(provider.id, provider.name, provider.fees, provider.minimumAmount, provider.minimumCurrency);
 }
 
-paygate.card.paymentUrl(wallet, '49.90', 'buyer@example.com', 'USD', { provider: 'wert' });
+paygate.card.paymentUrl(wallet, '49.90', 'buyer@example.com', 'USD', { provider: 'stripe' });
 ```
 
 The same callback URL always returns the same wallet, so rebuilding the link for an order is safe. Store `wallet.ipnToken` if you want to use `paymentStatus()` later.

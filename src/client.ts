@@ -5,7 +5,7 @@ import { InvalidArgumentError } from './errors.js';
 import { Requester, type FetchLike } from './http.js';
 import { normaliseHost } from './support.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.0';
 export const DEFAULT_API_DOMAIN = 'api.paygate.to';
 export const DEFAULT_CHECKOUT_DOMAIN = 'checkout.paygate.to';
 
