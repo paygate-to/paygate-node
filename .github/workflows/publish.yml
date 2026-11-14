@@ -1,0 +1,28 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Use an npm that supports trusted publishing
+        run: npm install -g npm@latest
+      - name: Release tag must match package.json version
+        if: github.event_name == 'release'
+        run: test "${{ github.event.release.tag_name }}" = "v$(node -p "require('./package.json').version")"
+      - run: npm ci
+      - name: Build, test and publish
+        run: npm publish
