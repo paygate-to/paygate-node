@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { test } from 'node:test';
-import { CallbackData, CallbackToken, CallbackVerifier, InvalidArgumentError, PAYGATE_CALLBACK_PUBLIC_KEY_V1, callbackBase, rawQueryFrom } from '../../dist/esm/index.js';
+import { CallbackData, CallbackToken, CallbackVerifier, InvalidArgumentError, PAYGATE_CALLBACK_PUBLIC_KEY_V1, callbackBase, decodeXrpXAddress, rawQueryFrom, xrpPayoutForm } from '../../dist/esm/index.js';
 
 const REGISTERED = 'https://www.example8585859.com/orders.php?number=827746841326';
 const QUERY = 'number=827746841326&value_coin=105.6&coin=polygon_usdc&txid_in=0xa22a82b4aefbc55f6382e1b5c0b4f0e3c034a654df3bcac431f7fed1942e22bc&txid_out=0x94c2c3e84c2021e6bf377aebf8abf03b49570611bb0c336e357d7f4516f56244&address_in=0x32e854bD1270670C832634CA87858fFd9F3e2c78&value_forwarded_coin=104.016&address_out=%7B%220x34653D12778FccF10eE978EfFb16450258d2aFc9%22%3A%220.0500%22%2C%220x042beb6Ab05814c3A54C4124e368a30c4f7c93FB%22%3A%220.9250%22%7D';
@@ -11,6 +11,28 @@ const PEM = publicKey.export({ type: 'spki', format: 'pem' });
 const signWith = (data, key = privateKey) => sign('sha256', Buffer.from(data), key).toString('base64');
 const verifier = () => new CallbackVerifier({ keys: { v1: PEM } });
 const SIG = signWith('https://www.example8585859.com/orders.php?' + QUERY);
+
+test('XRP payouts match the tag and an X-address', () => {
+  // PayGate.to reports an XRP payout as r…?dt=TAG, also when the wallet was given as an X-address.
+  const data = CallbackData.fromQueryString('order=7&coin=xrp&value_coin=25&value_forwarded_coin=24&address_out=' + encodeURIComponent('{"rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777":"1"}'));
+  assert.equal(data.payoutFor('rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777'), '24');
+  assert.equal(data.payoutFor('X7qvLs7gSnNoKvZzNWUT2e8st17QPY84SkdtoNKGbhoPHEW'), '24'); // tag 777
+  assert.equal(data.payoutFor('X7qvLs7gSnNoKvZzNWUT2e8st17QPY8PYNZvJw9PF88Q9nV'), undefined); // tag 778
+  assert.equal(data.payoutFor('rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn'), undefined); // no tag
+});
+
+test('xrpPayoutForm and decodeXrpXAddress (vectors from xrpl-py)', () => {
+  assert.equal(xrpPayoutForm('X7qvLs7gSnNoKvZzNWUT2e8st17QPY64PPe7zriLNuJszeg'), 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn');
+  assert.equal(xrpPayoutForm('X7qvLs7gSnNoKvZzNWUT2e8st17QPY8U2gfaCcGHhuvg4XJ'), 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=0');
+  assert.equal(xrpPayoutForm(' X7qvLs7gSnNoKvZzNWUT2e8st17QPY84SkdtoNKGbhoPHEW '), 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777');
+  assert.equal(xrpPayoutForm('X7qvLs7gSnNoKvZzNWUT2e8st17QPY1pmxZ6cPwpL33FTog'), 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=4294967295');
+  assert.deepEqual(decodeXrpXAddress('X7qvLs7gSnNoKvZzNWUT2e8st17QPY84SkdtoNKGbhoPHEW'), { classic: 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn', tag: 777 });
+  for (const value of ['rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn', 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777', '0xF977814e90dA44bFA03b6295A0616a897441aceC',
+    'T7mSk9dCJp8FmSLbWJAN7eXx4KrUu3SQPvbMauYoBC2G63L', 'X7qvLs7gSnNoKvZzNWUT2e8st17QPY84SkdtoNKGbhoPHEX', 'X0OIl0OIl0OIl0OIl0OIl0OIl0OIl0OIl0OIl0OIl0OIl']) {
+    assert.equal(xrpPayoutForm(value), value);
+    assert.equal(decodeXrpXAddress(value), undefined);
+  }
+});
 
 test('valid signature', async () => {
   assert.deepEqual(await verifier().verify(REGISTERED, QUERY, SIG, 'v1'), { valid: true, reason: '', keyId: 'v1' });

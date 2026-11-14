@@ -3,7 +3,7 @@
 Accept card and crypto payments in Node.js without KYC, with every payment forwarded instantly to your own wallet.
 
 - **Cards**: Visa, Mastercard, Apple Pay, Google Pay and more through the hosted checkout. You receive USDC on Polygon.
-- **Crypto**: Bitcoin, Ethereum, USDT, USDC, Solana, Litecoin and many more on your own page with a QR code, or on the hosted multi-coin page, which also takes Monero, Zcash and TON.
+- **Crypto**: Bitcoin, Ethereum, USDT, USDC, Solana, Litecoin, XRP and many more on your own page with a QR code, or on the hosted multi-coin page, which also takes Monero, Zcash and TON.
 - **Callbacks**: PayGate.to's RSA signature is checked against the bundled public key. Payout amounts are decoded exactly.
 - **White label**: you can use your own checkout domain, logo and colours, earn affiliate commissions, and split payouts across up to 19 wallets.
 
@@ -89,6 +89,8 @@ res.render('pay', { address: wallet.addressIn, amount: quote.value, qr: qr.dataU
 
 Coins are written as `btc`, `erc20_usdc` or `erc20/usdc`; all three forms work. Use a payout wallet on the coin's network, for example an EVM address for ERC20, BEP20 and Polygon tokens.
 
+Native XRP on the XRP Ledger is `xrp` (`bep20_xrp` is XRP on BNB Smart Chain). Its payout wallet can be a classic address (`r…`), a classic address with a destination tag (`r…?dt=777`) or an X-address. The customer pays `addressIn` and never needs a tag.
+
 Wallet options:
 
 ```js
@@ -100,7 +102,7 @@ await paygate.crypto.createWallet('ltc', myLtcWallet, callback, {
 
 ## Hosted multi-coin page
 
-The customer picks a coin on the hosted page. Pass one wallet for each network you accept (`HOSTED_NETWORKS`: `evm`, `btc`, `bitcoincash`, `ltc`, `doge`, `solana`, `trc20`, `xmr`, `zec`, `ton`).
+The customer picks a coin on the hosted page. Pass one wallet for each network you accept (`HOSTED_NETWORKS`: `evm`, `btc`, `bitcoincash`, `ltc`, `doge`, `solana`, `trc20`, `xmr`, `zec`, `ton`, `xrp`).
 
 ```js
 const hosted = await paygate.crypto.createHostedWallet({
@@ -154,7 +156,7 @@ Each check matters:
 - **Token**: the callback URL is chosen when the wallet is created, so anyone can create a wallet whose callback names one of your orders and pay it a few cents. The token proves your server issued that order reference. Without tokens, compare `data.addressIn` with the order's deposit address (`wallet.polygonAddressIn` for cards, `wallet.addressIn` for crypto); the hosted page has no address in advance, so use tokens there.
 - **Transaction id**: callbacks are repeated until you answer `ok`.
 - **Coin and amount**: the payment link is visible to the customer, and any token can be sent to a crypto address.
-- **Payout address**: callback URLs end up in web server logs. With a leaked URL, someone could create a wallet that pays *them* and still call your callback. `data.payoutFor('0xYourWallet')` returns what reached your wallet (undefined if nothing did). Expect it to be at least 90% of the amount forwarded.
+- **Payout address**: callback URLs end up in web server logs. With a leaked URL, someone could create a wallet that pays *them* and still call your callback. `data.payoutFor('0xYourWallet')` returns what reached your wallet (undefined if nothing did). Expect it to be at least 90% of the amount forwarded. PayGate.to reports an XRP payout as `r…?dt=TAG` (or `r…` without a tag), also when you gave an X-address; `payoutFor()` accepts your wallet in any of these forms.
 
 Pass `verifyRequest()` the callback URL you registered, as a constant in your code. Only its scheme, host and path are used. The signed string is that URL followed by the query string exactly as it arrived. The SDK reads it from `req.originalUrl` (Express) or `req.url` (Node's `http`) and never rebuilds it, because one changed byte invalidates the signature. Don't rebuild the query from `req.query` or `URLSearchParams`. With another framework, call `verify()` with the raw query string:
 
@@ -328,7 +330,7 @@ In your own tests, pass a fake `fetch` to `PayGate`. `test/helpers.mjs` shows ho
 - `CallbackVerifier`: `verify()`, `verifyRequest()`, `addKey()`
 - `CallbackData`: see the payment data table above
 - `CallbackToken`: `callbackUrl()`, `sign()`, `verify()`. Its tokens match the PHP SDK's for the same secret.
-- Helpers: `coinId()`, `coinPath()`, `rawQueryFrom()`, `callbackBase()`, `PAYGATE_PARAMS`, `HOSTED_NETWORKS`
+- Helpers: `coinId()`, `coinPath()`, `rawQueryFrom()`, `callbackBase()`, `xrpPayoutForm()`, `decodeXrpXAddress()`, `PAYGATE_PARAMS`, `HOSTED_NETWORKS`
 
 The API is documented at <https://paygate.to/docs/payment-gateway-api/> (cards) and <https://paygate.to/docs/crypto-payment-api/> (crypto).
 

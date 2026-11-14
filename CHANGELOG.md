@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-14
+
+### Added
+- Native XRP on the XRP Ledger: `xrp` in `HOSTED_NETWORKS` for the hosted multi-coin page. The
+  payout wallet can be `r…`, `r…?dt=TAG` with a destination tag, or an X-address.
+- `xrpPayoutForm()` turns an X-address into the `r…?dt=TAG` form PayGate.to reports in
+  `address_out`; `decodeXrpXAddress()` returns its classic address and tag.
+
+### Changed
+- `CallbackData.payoutFor()` also matches an XRP payout when you pass your wallet as an X-address.
+
 ## [1.1.0] - 2026-11-06
 
 ### Fixed

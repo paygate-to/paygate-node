@@ -2,6 +2,7 @@ import { createHmac, createPublicKey, timingSafeEqual, verify as rsaVerify, type
 import { InvalidArgumentError } from './errors.js';
 import { PAYGATE_CALLBACK_PUBLIC_KEY_V1 } from './keys.js';
 import { PAYGATE_PARAMS, encode, multiplyDecimal, plainDecimal, roundDecimal, safeDecode } from './support.js';
+import { xrpPayoutForm } from './xrp.js';
 
 /** Why a callback was rejected. */
 export type VerificationFailure =
@@ -337,9 +338,12 @@ export class CallbackData {
     );
   }
 
-  /** Amount received by one payout address (case-insensitive), undefined if it was not paid. */
+  /**
+   * Amount received by one payout address (case-insensitive), undefined if it was not paid.
+   * An XRP X-address is matched in the form PayGate.to reports it: "r…?dt=TAG".
+   */
   payoutFor(address: string, scale?: number): string | undefined {
-    const wanted = address.trim().toLowerCase();
+    const wanted = xrpPayoutForm(address).toLowerCase();
     for (const [payee, amount] of Object.entries(this.payouts(scale))) {
       if (payee.toLowerCase() === wanted) {
         return amount;

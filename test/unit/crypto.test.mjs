@@ -120,6 +120,17 @@ test('hosted wallet and page link', async () => {
   assert.equal(crypto.hostedPaymentUrl('tok%2B%3D'), 'https://checkout.paygate.to/crypto/hosted.php?payment_token=tok%2B%3D&add_fees=0');
 });
 
+test('XRP wallets keep the destination tag', async () => {
+  http.respond({ address_in: 'rHCXoW2kAvMMMZoWtsNzgFQthPVighxiQr', callback_url: CALLBACK, ipn_token: 'aXBu' });
+  const wallet = await crypto.createWallet('xrp', 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777', CALLBACK);
+  assert.equal(http.lastPath, '/crypto/xrp/wallet.php');
+  assert.equal(http.lastQuery, 'address=rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn%3Fdt%3D777&callback=' + encodeURIComponent(CALLBACK));
+  assert.equal(wallet.addressIn, 'rHCXoW2kAvMMMZoWtsNzgFQthPVighxiQr');
+  http.respond({ payment_token: 'tok', callback_url: CALLBACK, ipn_token: 'aXBu' });
+  await crypto.createHostedWallet({ xrp: 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777' }, 10, 'USD', CALLBACK);
+  assert.deepEqual(JSON.parse(http.last.body), { xrp: 'rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn?dt=777', fiat_amount: 10, fiat_currency: 'USD', callback: CALLBACK });
+});
+
 test('hosted wallet validation', async () => {
   await assert.rejects(crypto.createHostedWallet({ eth: '0x1' }, 10, 'USD', CALLBACK), /Unknown network "eth"/);
   await assert.rejects(crypto.createHostedWallet({ btc: ' ' }, 10, 'USD', CALLBACK), /at least one network/);

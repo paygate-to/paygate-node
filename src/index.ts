@@ -23,6 +23,7 @@ export {
   type KeyResolver,
   type RequestLike,
 } from './callback.js';
+export { xrpPayoutForm, decodeXrpXAddress, type XrpXAddress } from './xrp.js';
 export { PayGateError, InvalidArgumentError, ApiError, TransportError } from './errors.js';
 export { PAYGATE_PARAMS, type Amount, type Branding } from './support.js';
 export type { FetchLike } from './http.js';
